@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  mysql-compare:
+    build: .
+    container_name: mysql-compare
+    environment:
+      # MySQL Master Configuration
+      - MASTER_HOST=mysql-master
+      - MASTER_PORT=3306
+      - MASTER_USER=root
+      - MASTER_PASSWORD=password
+      
+      # MySQL Slave Configuration  
+      - SLAVE_HOST=mysql-slave
+      - SLAVE_PORT=3306
+      - SLAVE_USER=root
+      - SLAVE_PASSWORD=password
+      
+      # Database and Tables
+      - DATABASE=mydb
+      - TABLES=users,orders,products  # Optional: specific tables
+      - MAX_DIFFERENCE_PERCENT=5.0
+      
+      # Schedule (cron-like)
+      - CRON_SCHEDULE=*/10  # Every 10 minutes
+      
+      # Email Configuration (optional)
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - MAIL_FROM=service@textbookweb.nl
+      - MAIL_TO=pawel@werda.pl,jkroger@newclicks.nl
+      
+      # Timezone
+      - TZ=UTC
+    
+    # For cron mode
+    command: ["cron"]
+    
+    # For one-time run, use:
+    # command: ["run-once"]
+    
+    restart: unless-stopped
+    
+    # Optional: if you have MySQL containers in the same network
+    # depends_on:
+    #   - mysql-master
+    #   - mysql-slave
+    
+    # networks:
+    #   - mysql-network
+
+# networks:
+#   mysql-network:
+#     external: true
