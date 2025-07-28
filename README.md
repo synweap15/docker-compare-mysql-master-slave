@@ -103,6 +103,7 @@ docker run -d mysql-compare cron \
 - `MAIL_FROM`: From email address
 - `MAIL_TO`: Comma-separated list of recipient email addresses
 - `ALWAYS_SEND_REPORT`: Set to "true" to send comprehensive reports after every check
+- `PROJECT_NAME`: Project name to include in email notifications (default: "MySQL Replication Monitor")
 
 ### Schedule Formats
 
@@ -146,6 +147,7 @@ python mysql_compare.py \
 - `--sendgrid-api-key`: SendGrid API key for email notifications
 - `--mail-from`, `--mail-to`: Email addresses
 - `--always-send-report`: Always send comprehensive reports after each check
+- `--project-name`: Project name to include in email notifications
 
 ## Email Notifications
 
@@ -154,7 +156,7 @@ The tool supports two types of email notifications:
 ### Alerts (Default Behavior)
 When the difference percentage between master and slave row counts exceeds the configured threshold, an HTML email alert is sent containing:
 
-- Database name and timestamp
+- Project name, database name and timestamp
 - Table comparison results showing only tables with significant differences:
   - Master row count
   - Slave row count  
