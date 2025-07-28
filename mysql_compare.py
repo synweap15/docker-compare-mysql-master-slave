@@ -154,10 +154,11 @@ class MySQLComparator:
 
 
 class EmailNotifier:
-    def __init__(self, sendgrid_api_key: str, from_email: str, to_emails: list[str]):
+    def __init__(self, sendgrid_api_key: str, from_email: str, to_emails: list[str], project_name: str = "MySQL Replication Monitor"):
         self.sendgrid_api_key = sendgrid_api_key
         self.from_email = from_email
         self.to_emails = to_emails
+        self.project_name = project_name
 
     def send_report(
         self, results: Dict[str, Dict], database: str, force_send: bool = False
@@ -170,15 +171,16 @@ class EmailNotifier:
             return
 
         if alert_tables:
-            subject = f"MySQL Replication Alert - Database: {database}"
+            subject = f"[{self.project_name}] MySQL Replication Alert - Database: {database}"
         else:
-            subject = f"MySQL Replication Report - Database: {database}"
+            subject = f"[{self.project_name}] MySQL Replication Report - Database: {database}"
 
         if alert_tables:
             body = f"""
             <html>
             <body>
-            <h2>MySQL Master-Slave Replication Alert</h2>
+            <h2>{self.project_name} - MySQL Master-Slave Replication Alert</h2>
+            <p><strong>Project:</strong> {self.project_name}</p>
             <p><strong>Database:</strong> {database}</p>
             <p><strong>Time:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
             
@@ -207,7 +209,8 @@ class EmailNotifier:
             body = f"""
             <html>
             <body>
-            <h2>MySQL Master-Slave Replication Report</h2>
+            <h2>{self.project_name} - MySQL Master-Slave Replication Report</h2>
+            <p><strong>Project:</strong> {self.project_name}</p>
             <p><strong>Database:</strong> {database}</p>
             <p><strong>Time:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
             
@@ -322,6 +325,11 @@ def main():
         action="store_true",
         help="Always send report after each check, even if no alerts (default: only send on alerts)",
     )
+    parser.add_argument(
+        "--project-name",
+        default="MySQL Replication Monitor",
+        help="Project name to include in email notifications (default: MySQL Replication Monitor)",
+    )
 
     args = parser.parse_args()
 
@@ -355,6 +363,7 @@ def main():
             args.sendgrid_api_key,
             args.mail_from,
             to_emails,
+            args.project_name,
         )
 
     tables = None
