@@ -24,7 +24,7 @@ COPY pyproject.toml poetry.lock* ./
 
 # Configure poetry and install dependencies
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-dev --no-interaction --no-ansi
+    && poetry install --only=main --no-interaction --no-ansi --no-root
 
 COPY mysql_compare.py .
 COPY docker-entrypoint.sh /usr/local/bin/
