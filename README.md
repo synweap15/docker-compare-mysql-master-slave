@@ -166,7 +166,7 @@ When the difference percentage between master and slave row counts exceeds the c
 ### Comprehensive Reports (--always-send-report flag)
 When the `--always-send-report` flag is enabled, emails are sent after every check regardless of alert status, containing:
 
-- Database name and timestamp
+- Project name, database name and timestamp
 - Complete table comparison results for all monitored tables:
   - Master row count
   - Slave row count

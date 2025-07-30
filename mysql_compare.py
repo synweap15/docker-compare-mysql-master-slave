@@ -357,11 +357,13 @@ def main():
         sys.exit(1)
 
     email_notifier = None
-    if all([args.sendgrid_api_key, args.mail_from, args.mail_to]):
+    if all([args.sendgrid_api_key, args.mail_to]):
+        # Use provided mail_from or default
+        mail_from = args.mail_from or "noreply@mysql-monitor.local"
         to_emails = [email.strip() for email in args.mail_to.split(",")]
         email_notifier = EmailNotifier(
             args.sendgrid_api_key,
-            args.mail_from,
+            mail_from,
             to_emails,
             args.project_name,
         )
@@ -403,6 +405,10 @@ def main():
             sys.exit(1)
 
         logger.info(f"Scheduled to run: {args.schedule}")
+        
+        # Run the first check immediately
+        logger.info("Running initial comparison...")
+        run_comparison()
 
         while True:
             schedule.run_pending()

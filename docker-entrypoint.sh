@@ -3,8 +3,10 @@ set -e
 
 if [[ "$1" == "cron" ]]; then
     # Parse environment variables for cron job
-    if [[ -z "$CRON_SCHEDULE" ]]; then
-        echo "Error: CRON_SCHEDULE environment variable is required for cron mode"
+    # Support both SCHEDULE and CRON_SCHEDULE for backward compatibility
+    SCHEDULE_VAR="${SCHEDULE:-$CRON_SCHEDULE}"
+    if [[ -z "$SCHEDULE_VAR" ]]; then
+        echo "Error: SCHEDULE (or CRON_SCHEDULE) environment variable is required for cron mode"
         exit 1
     fi
     
@@ -28,10 +30,14 @@ if [[ "$1" == "cron" ]]; then
     [[ -n "$SENDGRID_API_KEY" ]] && CMD="$CMD --sendgrid-api-key $SENDGRID_API_KEY"
     [[ -n "$MAIL_FROM" ]] && CMD="$CMD --mail-from $MAIL_FROM"
     [[ -n "$MAIL_TO" ]] && CMD="$CMD --mail-to $MAIL_TO"
+    [[ -n "$PROJECT_NAME" ]] && CMD="$CMD --project-name $PROJECT_NAME"
+    [[ "$ALWAYS_SEND_REPORT" == "true" ]] && CMD="$CMD --always-send-report"
     
-    CMD="$CMD --schedule $CRON_SCHEDULE"
+    # Support both SCHEDULE and CRON_SCHEDULE for backward compatibility
+    SCHEDULE_VAR="${SCHEDULE:-$CRON_SCHEDULE}"
+    CMD="$CMD --schedule $SCHEDULE_VAR"
     
-    echo "Starting MySQL comparison with schedule: $CRON_SCHEDULE"
+    echo "Starting MySQL comparison with schedule: $SCHEDULE_VAR"
     echo "Command: $CMD"
     
     exec $CMD
@@ -57,6 +63,8 @@ elif [[ "$1" == "run-once" ]]; then
     [[ -n "$SENDGRID_API_KEY" ]] && CMD="$CMD --sendgrid-api-key $SENDGRID_API_KEY"
     [[ -n "$MAIL_FROM" ]] && CMD="$CMD --mail-from $MAIL_FROM"
     [[ -n "$MAIL_TO" ]] && CMD="$CMD --mail-to $MAIL_TO"
+    [[ -n "$PROJECT_NAME" ]] && CMD="$CMD --project-name $PROJECT_NAME"
+    [[ "$ALWAYS_SEND_REPORT" == "true" ]] && CMD="$CMD --always-send-report"
     
     echo "Running MySQL comparison once"
     echo "Command: $CMD"
