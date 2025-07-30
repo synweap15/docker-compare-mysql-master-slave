@@ -1,6 +1,16 @@
 #!/bin/bash
 set -e
 
+# Function to privatize sensitive information for logging
+privatize_value() {
+    local value="$1"
+    if [[ -n "$value" && ${#value} -gt 2 ]]; then
+        echo "${value:0:2}$(printf 'x%.0s' $(seq 1 $((${#value} - 2))))"
+    else
+        echo "$value"
+    fi
+}
+
 if [[ "$1" == "cron" ]]; then
     # Parse environment variables for cron job
     # Support both SCHEDULE and CRON_SCHEDULE for backward compatibility
@@ -37,8 +47,16 @@ if [[ "$1" == "cron" ]]; then
     SCHEDULE_VAR="${SCHEDULE:-$CRON_SCHEDULE}"
     CMD="$CMD --schedule $SCHEDULE_VAR"
     
+    # Create privatized version for logging
+    LOG_CMD="$CMD"
+    [[ -n "$MASTER_USER" ]] && LOG_CMD=$(echo "$LOG_CMD" | sed "s/--master-user $MASTER_USER/--master-user $(privatize_value "$MASTER_USER")/g")
+    [[ -n "$MASTER_PASSWORD" ]] && LOG_CMD=$(echo "$LOG_CMD" | sed "s/--master-password $MASTER_PASSWORD/--master-password $(privatize_value "$MASTER_PASSWORD")/g")
+    [[ -n "$SLAVE_USER" ]] && LOG_CMD=$(echo "$LOG_CMD" | sed "s/--slave-user $SLAVE_USER/--slave-user $(privatize_value "$SLAVE_USER")/g")
+    [[ -n "$SLAVE_PASSWORD" ]] && LOG_CMD=$(echo "$LOG_CMD" | sed "s/--slave-password $SLAVE_PASSWORD/--slave-password $(privatize_value "$SLAVE_PASSWORD")/g")
+    [[ -n "$SENDGRID_API_KEY" ]] && LOG_CMD=$(echo "$LOG_CMD" | sed "s/--sendgrid-api-key $SENDGRID_API_KEY/--sendgrid-api-key $(privatize_value "$SENDGRID_API_KEY")/g")
+    
     echo "Starting MySQL comparison with schedule: $SCHEDULE_VAR"
-    echo "Command: $CMD"
+    echo "Command: $LOG_CMD"
     
     exec $CMD
     
@@ -66,8 +84,16 @@ elif [[ "$1" == "run-once" ]]; then
     [[ -n "$PROJECT_NAME" ]] && CMD="$CMD --project-name $PROJECT_NAME"
     [[ "$ALWAYS_SEND_REPORT" == "true" ]] && CMD="$CMD --always-send-report"
     
+    # Create privatized version for logging
+    LOG_CMD="$CMD"
+    [[ -n "$MASTER_USER" ]] && LOG_CMD=$(echo "$LOG_CMD" | sed "s/--master-user $MASTER_USER/--master-user $(privatize_value "$MASTER_USER")/g")
+    [[ -n "$MASTER_PASSWORD" ]] && LOG_CMD=$(echo "$LOG_CMD" | sed "s/--master-password $MASTER_PASSWORD/--master-password $(privatize_value "$MASTER_PASSWORD")/g")
+    [[ -n "$SLAVE_USER" ]] && LOG_CMD=$(echo "$LOG_CMD" | sed "s/--slave-user $SLAVE_USER/--slave-user $(privatize_value "$SLAVE_USER")/g")
+    [[ -n "$SLAVE_PASSWORD" ]] && LOG_CMD=$(echo "$LOG_CMD" | sed "s/--slave-password $SLAVE_PASSWORD/--slave-password $(privatize_value "$SLAVE_PASSWORD")/g")
+    [[ -n "$SENDGRID_API_KEY" ]] && LOG_CMD=$(echo "$LOG_CMD" | sed "s/--sendgrid-api-key $SENDGRID_API_KEY/--sendgrid-api-key $(privatize_value "$SENDGRID_API_KEY")/g")
+    
     echo "Running MySQL comparison once"
-    echo "Command: $CMD"
+    echo "Command: $LOG_CMD"
     
     exec $CMD
     
